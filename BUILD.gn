@@ -1,0 +1,23 @@
+import("../build/webrtc.gni")
+
+rtc_executable("pulsar-webrtc") {
+  sources = [
+    "main.cpp",
+    "pulsar_peer_connection.cpp",
+    "pulsar_peer_connection.h",
+    "easywsclient.cpp",
+    "easywsclient.hpp",
+    "pulsar_desktop_capturer.cpp",
+    "pulsar_desktop_capturer.hpp",
+  ]
+  deps = [
+    "//webrtc/system_wrappers:field_trial_default",
+    "//webrtc/system_wrappers:metrics_default",
+
+    "//webrtc/api:libjingle_peerconnection",
+    "//third_party/jsoncpp",
+    "//webrtc/modules/desktop_capture",
+  ]
+  cflags = [ "/wd4245", "/wd4267", "/wd4477" ]
+  
+}
