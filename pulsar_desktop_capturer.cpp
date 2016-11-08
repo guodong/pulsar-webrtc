@@ -96,7 +96,6 @@ public:
 
 void capCallback::OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame)
 {
-	std::cout << "okok" << std::endl;
 	const int32_t width = frame->size().width();
 	const int32_t height = frame->size().height();
 	int stride_y = width;
@@ -107,7 +106,7 @@ void capCallback::OnCaptureResult(webrtc::DesktopCapturer::Result result, std::u
 		target_width, target_height, stride_y, stride_uv, stride_uv);
 	const int conversionResult = ConvertToI420(
 		webrtc::kARGB, frame->data(), 0, 0,  // No cropping
-		width, height, width * height * 4,
+		width, height, width * height << 2,
 		webrtc::kVideoRotation_0, buffer.get());
 	if (conversionResult < 0)
 	{
@@ -128,20 +127,21 @@ void CaptureThread()
 	std::cout << "hahaha" << std::endl;
 	webrtc::DesktopCaptureOptions options =
 		webrtc::DesktopCaptureOptions::CreateDefault();
+	options.set_allow_directx_capturer(true);
 	std::unique_ptr<webrtc::ScreenCapturer> screen_capturer(
 		webrtc::ScreenCapturer::Create(options));
 
-	std::unique_ptr<webrtc::DesktopCapturer> capturer;
+	//std::unique_ptr<webrtc::DesktopCapturer> capturer;
 	if (screen_capturer && screen_capturer->SelectScreen(0)) {
-		capturer.reset(new webrtc::DesktopAndCursorComposer(
-			screen_capturer.release(),
-			webrtc::MouseCursorMonitor::CreateForScreen(options, 0)));
+		//capturer.reset(new webrtc::DesktopAndCursorComposer(
+		//	screen_capturer.release(),
+		//	webrtc::MouseCursorMonitor::CreateForScreen(options, 0)));
 	}
 	capCallback cb;
-	capturer->Start(&cb);
+	screen_capturer->Start(&cb);
 	while (1)
 	{
-		capturer->CaptureFrame();
+		screen_capturer->CaptureFrame();
 	}
 }
 
@@ -153,9 +153,10 @@ namespace pulsar {
 		format.width = 500;
 		format.height = 500;
 		format.fourcc = FOURCC_I420;
-		format.interval = 50;
+		format.interval = 20;
 		fmt.push_back(format);
 		SetSupportedFormats(fmt);
+		
 	}
 	PulsarDesktopCapturer::~PulsarDesktopCapturer() {}
 	struct kVideoFourCCEntry {
@@ -192,7 +193,7 @@ namespace pulsar {
 		cap->maxFPS = cricket::VideoFormat::IntervalToFps(format.interval);
 		cap->expectedCaptureDelay = 0;
 		cap->rawType = webrtc_type;
-		cap->codecType = webrtc::kVideoCodecUnknown;
+		cap->codecType = webrtc::kVideoCodecVP9;
 		cap->interlaced = false;
 		return true;
 	}
@@ -209,6 +210,7 @@ namespace pulsar {
 		SetCaptureFormat(&capture_format);
 
 		webrtc::VideoCaptureCapability cap;
+		cap.codecType = webrtc::kVideoCodecH264;
 		if (!FormatToCapability(capture_format, &cap)) {
 			LOG(LS_ERROR) << "Invalid capture format specified";
 			return cricket::CS_FAILED;
@@ -260,8 +262,8 @@ namespace pulsar {
 		const int32_t id,
 		const webrtc::VideoFrame& sample) {
 		// This can only happen between Start() and Stop().
-		RTC_DCHECK(start_thread_);
-		RTC_DCHECK(async_invoker_);
+		//RTC_DCHECK(start_thread_);
+		//RTC_DCHECK(async_invoker_);
 
 
 		OnFrame(cricket::WebRtcVideoFrame(

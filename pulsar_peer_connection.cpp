@@ -1,5 +1,4 @@
 #include <iostream>
-#include <fstream>
 
 #include "pulsar_peer_connection.h"
 #include "easywsclient.hpp"
@@ -62,7 +61,7 @@ void PulsarPeerConnection::AddStreams() {
 
 	webrtc::FakeConstraints video_constraints;
 	video_constraints.AddMandatory(
-		webrtc::MediaConstraintsInterface::kMinFrameRate, 5);
+		webrtc::MediaConstraintsInterface::kMinFrameRate, 30);
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(
 		peer_connection_factory_->CreateVideoTrack(
 			"video_label",
@@ -126,9 +125,6 @@ void PulsarPeerConnection::OnIceCandidate(const webrtc::IceCandidateInterface* c
 	jmessage["candidate"] = sdp;
 	std::string msg = writer.write(jmessage);
 	std::cout << msg;
-	std::ofstream out("aoutput.txt");
-	out << msg;
-	out.close();
 	ws->send(msg);
 }
 

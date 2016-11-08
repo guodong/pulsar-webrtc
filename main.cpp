@@ -11,6 +11,8 @@ using easywsclient::WebSocket;
 /* globals */
 rtc::scoped_refptr<PulsarPeerConnection> pulsar_peer_connection_;
 WebSocket::pointer ws;
+std::string token;
+std::string wsServerAddr;
 /* /globals */
 
 
@@ -81,7 +83,8 @@ void HandleWsMessage(const std::string &message)
 
 void WsThread()
 {
-	ws = WebSocket::from_url_no_mask("ws://106.75.71.14:3000");
+	ws = WebSocket::from_url_no_mask(wsServerAddr);
+	ws->send("ready");
 	while (true)
 	{
 		ws->poll();
@@ -91,29 +94,20 @@ void WsThread()
 
 int main(int argc, char *argv[])
 {
-	/*PeerConnectionClient client;
-	rtc::scoped_refptr<Conductor> conductor(
-		new rtc::RefCountedObject<Conductor>(&client)
-	);*/
-
+	//FreeConsole();
+	if (argc > 1)
+	{
+		wsServerAddr = std::string(argv[1]);
+		std::cout << wsServerAddr << std::endl;
+	}
 	std::thread wsThread(WsThread);
-
-	//wsThread.join();
 	
 
 	rtc::Win32Thread w32_thread;
 	rtc::ThreadManager::Instance()->SetCurrentThread(&w32_thread);
 
-	std::string token(argv[1]);
-	PulsarPeerConnection *p = new rtc::RefCountedObject<PulsarPeerConnection>();
-	//rtc::scoped_refptr<PulsarPeerConnection> p(new rtc::RefCountedObject<PulsarPeerConnection>());
-	pulsar_peer_connection_ = p;
+	pulsar_peer_connection_ = new rtc::RefCountedObject<PulsarPeerConnection>();
 	pulsar_peer_connection_->CreatePeerConnection(true);
-
-	/*Signaling signaling(token);
-	signaling.server_address.SetIP("106.75.71.14");
-	signaling.server_address.SetPort(3000);
-	signaling.GetPeerInfo();*/
 
 	rtc::Thread::Current()->Run();
 	
