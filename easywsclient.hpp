@@ -13,8 +13,8 @@
 
 namespace easywsclient {
 
-	struct Callback_Imp { virtual void operator()(const std::string& message) = 0; };
-	struct BytesCallback_Imp { virtual void operator()(const std::vector<uint8_t>& message) = 0; };
+	struct Callback_Imp { virtual void operator()(const std::string& message) = 0; virtual protected ~Callback_Imp() = 0};
+	struct BytesCallback_Imp { virtual void operator()(const std::vector<uint8_t>& message) = 0; virtual protected ~BytesCallback_Imp() = 0};
 
 	class WebSocket {
 	public:

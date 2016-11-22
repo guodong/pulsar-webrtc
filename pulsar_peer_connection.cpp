@@ -4,11 +4,11 @@
 #include "easywsclient.hpp"
 #include "webrtc/api/peerconnectioninterface.h"
 #include "webrtc/api/test/fakeconstraints.h"
-#include "webrtc\base\json.h"
-#include "webrtc\media\engine\webrtcvideocapturerfactory.h"
-#include "webrtc\modules\video_capture\video_capture_factory.h"
-#include "webrtc\modules\desktop_capture\desktop_capturer.h"
-#include "webrtc\media\base\videocapturer.h"
+#include "webrtc/base/json.h"
+#include "webrtc/media/engine/webrtcvideocapturerfactory.h"
+#include "webrtc/modules/video_capture/video_capture_factory.h"
+#include "webrtc/modules/desktop_capture/desktop_capturer.h"
+#include "webrtc/media/base/videocapturer.h"
 #include "pulsar_desktop_capturer.h"
 
 using easywsclient::WebSocket;
@@ -101,7 +101,7 @@ bool PulsarPeerConnection::CreatePeerConnection(bool dtls)
 	}
 	AddStreams();
 
-	
+
 	return true;
 }
 

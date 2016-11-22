@@ -1,14 +1,18 @@
-#include <thread>
+//#include <thread>
 #include <iostream>
 #include <cmath>
 
 #include "pulsar_desktop_capturer.h"
-#include "webrtc\media\base\videocommon.h"
-#include "webrtc\base\arraysize.h"
-#include "webrtc\modules\desktop_capture\desktop_capturer.h"
-#include "webrtc\modules\desktop_capture\screen_capturer.h"
-#include "webrtc\modules\desktop_capture\desktop_capture_options.h"
-#include "webrtc\modules\desktop_capture\desktop_and_cursor_composer.h"
+#include "webrtc/media/base/videocommon.h"
+#include "webrtc/base/arraysize.h"
+#include "webrtc/modules/desktop_capture/desktop_capturer.h"
+//#include "webrtc/modules/desktop_capture/screen_capturer.h"
+#include "webrtc/modules/desktop_capture/desktop_capture_options.h"
+#include "webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
+#include "webrtc/media/engine/webrtcvideocapturer.h"
+#include "webrtc/modules/video_capture/video_capture_factory.h"
+#include "webrtc/video_frame.h"
+
 
 #define FOURCC(a, b, c, d)                                        \
   ((static_cast<uint32_t>(a)) | (static_cast<uint32_t>(b) << 8) | \
@@ -110,7 +114,7 @@ void capCallback::OnCaptureResult(webrtc::DesktopCapturer::Result result, std::u
 		webrtc::kVideoRotation_0, buffer.get());
 	if (conversionResult < 0)
 	{
-		LOG(LS_ERROR) << "Failed to convert capture frame from type ";
+		//LOG(LS_ERROR) << "Failed to convert capture frame from type ";
 		return;
 	}
 
@@ -118,7 +122,7 @@ void capCallback::OnCaptureResult(webrtc::DesktopCapturer::Result result, std::u
 		buffer, 0, rtc::TimeMillis(),
 		webrtc::kVideoRotation_0);
 	captureFrame.set_ntp_time_ms(0);
-	
+
 	cap->OnIncomingCapturedFrame(0, captureFrame);
 }
 
@@ -127,18 +131,18 @@ void CaptureThread()
 	std::cout << "hahaha" << std::endl;
 	webrtc::DesktopCaptureOptions options =
 		webrtc::DesktopCaptureOptions::CreateDefault();
-	options.set_allow_directx_capturer(true);
-	std::unique_ptr<webrtc::ScreenCapturer> screen_capturer(
-		webrtc::ScreenCapturer::Create(options));
+	//options.set_allow_directx_capturer(true);
+	std::unique_ptr<webrtc::DesktopCapturer> screen_capturer(
+		webrtc::DesktopCapturer::CreateScreenCapturer(options));
 
 	//std::unique_ptr<webrtc::DesktopCapturer> capturer;
-	if (screen_capturer && screen_capturer->SelectScreen(0)) {
+	//if (screen_capturer && screen_capturer->SelectScreen(0)) {
 		//capturer.reset(new webrtc::DesktopAndCursorComposer(
 		//	screen_capturer.release(),
 		//	webrtc::MouseCursorMonitor::CreateForScreen(options, 0)));
-	}
+	//}
 	capCallback cb;
-	screen_capturer->Start(&cb);
+	//screen_capturer->Start(&cb);
 	while (1)
 	{
 		screen_capturer->CaptureFrame();
@@ -156,7 +160,7 @@ namespace pulsar {
 		format.interval = 20;
 		fmt.push_back(format);
 		SetSupportedFormats(fmt);
-		
+
 	}
 	PulsarDesktopCapturer::~PulsarDesktopCapturer() {}
 	struct kVideoFourCCEntry {
@@ -212,11 +216,11 @@ namespace pulsar {
 		webrtc::VideoCaptureCapability cap;
 		cap.codecType = webrtc::kVideoCodecH264;
 		if (!FormatToCapability(capture_format, &cap)) {
-			LOG(LS_ERROR) << "Invalid capture format specified";
+			//LOG(LS_ERROR) << "Invalid capture format specified";
 			return cricket::CS_FAILED;
 		}
 
-		int64_t start = rtc::TimeMillis();
+		//int64_t start = rtc::TimeMillis();
 		//module_->RegisterCaptureDataCallback(*this);
 		/*if (module_->StartCapture(cap) != 0) {
 			LOG(LS_ERROR) << "Camera '" << GetId() << "' failed to start";
@@ -227,12 +231,12 @@ namespace pulsar {
 			return cricket::CS_FAILED;
 		}*/
 
-		LOG(LS_INFO) << "Camera '" << GetId() << "' started with format "
-			<< capture_format.ToString() << ", elapsed time "
-			<< rtc::TimeSince(start) << " ms";
+		//LOG(LS_INFO) << "Camera '" << GetId() << "' started with format "
+			//<< capture_format.ToString() << ", elapsed time "
+			//<< rtc::TimeSince(start) << " ms";
 
 		SetCaptureState(cricket::CS_RUNNING);
-		std::thread captureThread(CaptureThread);
+		//std::thread captureThread(CaptureThread);
 		return cricket::CS_RUNNING;
 	}
 
@@ -266,7 +270,7 @@ namespace pulsar {
 		//RTC_DCHECK(async_invoker_);
 
 
-		OnFrame(cricket::WebRtcVideoFrame(
+		OnFrame(webrtc::VideoFrame(
 			sample.video_frame_buffer(), sample.rotation(),
 			sample.render_time_ms() * rtc::kNumMicrosecsPerMillisec),
 			sample.width(), sample.height());
@@ -274,6 +278,6 @@ namespace pulsar {
 
 	void PulsarDesktopCapturer::OnCaptureDelayChanged(const int32_t id,
 		const int32_t delay) {
-		LOG(LS_INFO) << "Capture delay changed to " << delay << " ms";
+		//LOG(LS_INFO) << "Capture delay changed to " << delay << " ms";
 	}
 }

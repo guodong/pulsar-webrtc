@@ -1,116 +1,104 @@
 #include <iostream>
-#include <thread>
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdlib.h>
+//#include "easywsclient.hpp"
+//#include "pulsar_peer_connection.h"
+//#include "webrtc/base/win32socketserver.h"
+#include "webrtc/base/json.h"
+#include "webrtc/base/thread.h"
+#include "pulsar_webrtc_connection.h"
 
-#include "easywsclient.hpp"
-#include "pulsar_peer_connection.h"
-#include "webrtc/base/win32socketserver.h"
-#include "webrtc\base\json.h"
-
-using easywsclient::WebSocket;
+//using easywsclient::WebSocket;
 
 /* globals */
-rtc::scoped_refptr<PulsarPeerConnection> pulsar_peer_connection_;
-WebSocket::pointer ws;
+//rtc::scoped_refptr<PulsarPeerConnection> pulsar_peer_connection_;
+//WebSocket::pointer ws;
 std::string token;
 std::string wsServerAddr;
+const char *socket_path = "/tmp/mysocket";
 /* /globals */
 
-
-
-void HandleWsMessage(const std::string &message)
+void *sock_thread(void *data)
 {
-	std::cout << message << std::endl;
-	Json::Reader reader;
-	Json::Value jmessage;
-	if (!reader.parse(message, jmessage))
-	{
-		LOG(WARNING) << "json parse error" << message;
-		return;
+
+    struct sockaddr_un addr;
+	char buf[100];
+	int fd, cl, rc;
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        perror("socket err");
+        exit(-1);
 	}
 
-	std::string type;
-	rtc::GetStringFromJsonObject(jmessage, "type", &type);
-	if (!type.empty()) // sdp
-	{
-		std::string sdp;
-		if (!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp))
-		{
-			LOG(WARNING) << "Can't parse received session description message.";
-			return;
-		}
-		webrtc::SdpParseError error;
-		webrtc::SessionDescriptionInterface *session_description(
-			webrtc::CreateSessionDescription(type, sdp, &error)
-		);
-		if (!session_description) {
-			LOG(WARNING) << "Can't parse received session description message. "
-				<< "SdpParseError was: " << error.description;
-			return;
-		}
-		LOG(INFO) << " Received session description :" << message;
-		pulsar_peer_connection_->peer_connection_->SetRemoteDescription(
-			DummySetSessionDescriptionObserver::Create(), session_description);
-		pulsar_peer_connection_->CreateAnswer();
-	}
-	else
-	{
-		std::string sdp_mid;
-		int sdp_mlineindex = 0;
-		std::string sdp;
-		if (!rtc::GetStringFromJsonObject(jmessage, "sdpMid",
-			&sdp_mid) ||
-			!rtc::GetIntFromJsonObject(jmessage, "sdpMLineIndex",
-				&sdp_mlineindex) ||
-			!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp)) {
-			LOG(WARNING) << "Can't parse received message.";
-			return;
-		}
-		webrtc::SdpParseError error;
-		std::unique_ptr<webrtc::IceCandidateInterface> candidate(
-			webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, &error));
-		if (!candidate.get()) {
-			LOG(WARNING) << "Can't parse received candidate message. "
-				<< "SdpParseError was: " << error.description;
-			return;
-		}
-		if (!pulsar_peer_connection_->peer_connection_->AddIceCandidate(candidate.get())) {
-			LOG(WARNING) << "Failed to apply the received candidate";
-			return;
-		}
-		LOG(INFO) << " Received candidate :" << message;
-	}
-}
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path) - 1);
+	unlink(socket_path);
 
-void WsThread()
-{
-	ws = WebSocket::from_url_no_mask(wsServerAddr);
-	ws->send("ready");
-	while (true)
-	{
-		ws->poll();
-		ws->dispatch(HandleWsMessage);
+	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+        perror("bind err");
+        exit(-1);
+	}
+
+	if (listen(fd, 5) == -1) {
+        perror("listen err");
+        exit(-1);
+	}
+
+	while (1) {
+        if ((cl = accept(fd, NULL, NULL)) == -1) {
+            perror("accept err");
+            continue;
+        }
+        while ((rc = read(cl, buf, sizeof(buf))) > 0) {
+            printf("readed\n");
+            write(cl, "hihi", 5);
+        }
+        if (rc == -1) {
+            perror("read err");
+            exit(-1);
+        } else if (rc == 0) {
+            printf("EOF\n");
+            close(cl);
+        }
 	}
 }
 
 int main(int argc, char *argv[])
 {
-	//FreeConsole();
+    pthread_t tid;
 	if (argc > 1)
 	{
 		wsServerAddr = std::string(argv[1]);
 		std::cout << wsServerAddr << std::endl;
 	}
-	std::thread wsThread(WsThread);
-	
 
-	rtc::Win32Thread w32_thread;
-	rtc::ThreadManager::Instance()->SetCurrentThread(&w32_thread);
+	pthread_create(&tid, NULL, sock_thread, NULL);
 
-	pulsar_peer_connection_ = new rtc::RefCountedObject<PulsarPeerConnection>();
-	pulsar_peer_connection_->CreatePeerConnection(true);
+	rtc::AutoThread auto_thread;
+	//rtc::Thread* thread = rtc::Thread::Current();
 
-	rtc::Thread::Current()->Run();
-	
+	rtc::ThreadManager::Instance()->SetCurrentThread(&auto_thread);
+	rtc::scoped_refptr<PulsarWebrtcConnection> pulsar_webrtc_connection;
+	pulsar_webrtc_connection = new rtc::RefCountedObject<PulsarWebrtcConnection>();
+    pulsar_webrtc_connection->CreatePeerConnection(true);
+    rtc::Thread::Current()->Run();
+
+
+
+	//std::thread wsThread(WsThread);
+
+
+//	rtc::Win32Thread w32_thread;
+//	rtc::ThreadManager::Instance()->SetCurrentThread(&w32_thread);
+//
+//	pulsar_peer_connection_ = new rtc::RefCountedObject<PulsarPeerConnection>();
+//	pulsar_peer_connection_->CreatePeerConnection(true);
+//
+//	rtc::Thread::Current()->Run();
+
 
 	return 0;
 }

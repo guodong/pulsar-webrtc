@@ -1,8 +1,8 @@
 #pragma once
-#include "webrtc\media\base\videocapturer.h"
-#include "webrtc\modules\video_capture\video_capture.h"
-#include "webrtc\base\asyncinvoker.h"
-#include "webrtc\modules\video_capture\video_capture_impl.h"
+#include "webrtc/media/base/videocapturer.h"
+#include "webrtc/modules/video_capture/video_capture.h"
+#include "webrtc/base/asyncinvoker.h"
+#include "webrtc/modules/video_capture/video_capture_impl.h"
 
 namespace pulsar {
 	class PulsarDesktopCapturer : public cricket::VideoCapturer,

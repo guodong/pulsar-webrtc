@@ -1,12 +1,42 @@
 import("../build/webrtc.gni")
+  config("peerconnection_client_warnings_config") {
+    cflags = []
+    if (is_win && is_clang) {
+      cflags += [
+        # Disable warnings failing when compiling with Clang on Windows.
+        # https://bugs.chromium.org/p/webrtc/issues/detail?id=5366
+        "-Wno-format",
 
+        # See https://bugs.chromium.org/p/webrtc/issues/detail?id=6271
+        # for -Wno-reorder and -Wno-sign-compare
+        "-Wno-reorder",
+        "-Wno-sign-compare",
+        "-pthread",
+      ]
+    }
+    if (is_linux && target_cpu == "x86") {
+      cflags += [
+        # Needed to compile on Linux 32-bit.
+        "-Wno-sentinel",
+      ]
+    }
+
+    if (is_clang) {
+      # TODO(ehmaldonado): Make peerconnection_client compile with the standard
+      # set of warnings.
+      # See https://bugs.chromium.org/p/webrtc/issues/detail?id=6306
+      cflags += [ "-Wno-inconsistent-missing-override" ]
+    }
+  }
 rtc_executable("pulsar-webrtc") {
   sources = [
     "main.cpp",
-    "pulsar_peer_connection.cpp",
-    "pulsar_peer_connection.h",
-    "easywsclient.cpp",
-    "easywsclient.hpp",
+    "pulsar_webrtc_connection.h",
+    "pulsar_webrtc_connection.cpp",
+    #"pulsar_peer_connection.cpp",
+    #"pulsar_peer_connection.h",
+    #"easywsclient.cpp",
+    #"easywsclient.hpp",
     "pulsar_desktop_capturer.cpp",
     "pulsar_desktop_capturer.hpp",
   ]
@@ -18,6 +48,8 @@ rtc_executable("pulsar-webrtc") {
     "//third_party/jsoncpp",
     "//webrtc/modules/desktop_capture",
   ]
-  cflags = [ "/wd4245", "/wd4267", "/wd4477" ]
-  
+  #cflags = [ "/wd4245", "/wd4267", "/wd4477" ]
+  #cflags += ["-pthread"]
+  suppressed_configs += [ "//build/config/clang:find_bad_constructs" ]
+  configs += [ ":peerconnection_client_warnings_config" ]
 }
