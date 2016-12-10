@@ -2,6 +2,9 @@
 #define PULSAR_WEBRTC_CONNECTION_H_INCLUDED
 
 #include "webrtc/api/peerconnectioninterface.h"
+#include "webrtc/api/datachannelinterface.h"
+#include "interacting_event_manager.h"
+#include "pulsar_desktop_capturer.h"
 
 class DummySetSessionDescriptionObserver
 	: public webrtc::SetSessionDescriptionObserver {
@@ -22,7 +25,9 @@ protected:
 };
 
 class PulsarWebrtcConnection : public webrtc::PeerConnectionObserver,
-    public webrtc::CreateSessionDescriptionObserver {
+    public webrtc::CreateSessionDescriptionObserver,
+    public webrtc::DataChannelObserver,
+    public pulsar::EventObserver {
 public:
     PulsarWebrtcConnection();
     virtual ~PulsarWebrtcConnection();
@@ -31,9 +36,15 @@ public:
     bool CreatePeerConnection(bool dtls);
 	void CreateAnswer();
 
+	/* DataChannelInterface Implementation */
+    void OnMessage(const webrtc::DataBuffer &buffer);
+    void OnStateChange() {};
+
+    /** pulsar::EventObserver Implementation */
+    void OnEvent(const XEvent &event);
+
 protected:
 	void AddStreams();
-	cricket::VideoCapturer* OpenVideoCaptureDevice();
 
 	void OnSignalingChange(
 		webrtc::PeerConnectionInterface::SignalingState new_state) override {};
@@ -58,6 +69,11 @@ protected:
 private:
 	rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
 		peer_connection_factory_;
+    rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel_;
+    pulsar::InteractingEventManager *iem;
+    pulsar::PulsarDesktopCapturer *desktop_capturer;
+    Display *display;
+    Window root;
 };
 
 #endif // PULSAR_WEBRTC_CONNECTION_H_INCLUDED

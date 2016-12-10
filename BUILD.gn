@@ -12,6 +12,7 @@ import("../build/webrtc.gni")
         "-Wno-reorder",
         "-Wno-sign-compare",
         "-pthread",
+        "-xcb-damage",
       ]
     }
     if (is_linux && target_cpu == "x86") {
@@ -39,6 +40,8 @@ rtc_executable("pulsar-webrtc") {
     #"easywsclient.hpp",
     "pulsar_desktop_capturer.cpp",
     "pulsar_desktop_capturer.hpp",
+    "interacting_event_manager.cpp",
+    "interacting_event_manager.h",
   ]
   deps = [
     "//webrtc/system_wrappers:field_trial_default",
@@ -49,7 +52,8 @@ rtc_executable("pulsar-webrtc") {
     "//webrtc/modules/desktop_capture",
   ]
   #cflags = [ "/wd4245", "/wd4267", "/wd4477" ]
-  #cflags += ["-pthread"]
+  #cflags += ["-xcb-damage"]
   suppressed_configs += [ "//build/config/clang:find_bad_constructs" ]
   configs += [ ":peerconnection_client_warnings_config" ]
+  configs += [ "//build/config/linux:x11" ]
 }

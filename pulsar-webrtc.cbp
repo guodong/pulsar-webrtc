@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="/home/ubuntu/webrtc-checkout/src/" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -34,15 +35,19 @@
 		<Unit filename="BUILD.gn" />
 		<Unit filename="easywsclient.cpp" />
 		<Unit filename="easywsclient.hpp" />
+		<Unit filename="interacting_event_manager.cpp" />
+		<Unit filename="interacting_event_manager.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="pulsar-webrtc.cbp" />
+		<Unit filename="pulsar-webrtc.layout" />
 		<Unit filename="pulsar_desktop_capturer.cpp" />
 		<Unit filename="pulsar_desktop_capturer.h" />
-		<Unit filename="pulsar_peer_connection.cpp" />
-		<Unit filename="pulsar_peer_connection.h" />
+		<Unit filename="pulsar_webrtc_connection.cpp" />
+		<Unit filename="pulsar_webrtc_connection.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

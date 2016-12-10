@@ -14,19 +14,84 @@
 //using easywsclient::WebSocket;
 
 /* globals */
-//rtc::scoped_refptr<PulsarPeerConnection> pulsar_peer_connection_;
 //WebSocket::pointer ws;
+rtc::scoped_refptr<PulsarWebrtcConnection> pulsar_webrtc_connection;
 std::string token;
 std::string wsServerAddr;
 const char *socket_path = "/tmp/mysocket";
+int fd, cl;
 /* /globals */
+
+void HandleWsMessage(const std::string &message)
+{
+	std::cout << message << std::endl;
+	Json::Reader reader;
+	Json::Value jmessage;
+	if (!reader.parse(message, jmessage))
+	{
+		LOG(WARNING) << "json parse error" << message;
+		return;
+	}
+
+	std::string type;
+	rtc::GetStringFromJsonObject(jmessage, "type", &type);
+	if (!type.empty()) // sdp
+	{
+		std::string sdp;
+		if (!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp))
+		{
+			LOG(WARNING) << "Can't parse received session description message.";
+			return;
+		}
+		webrtc::SdpParseError error;
+		webrtc::SessionDescriptionInterface *session_description(
+			webrtc::CreateSessionDescription(type, sdp, &error)
+		);
+		if (!session_description) {
+			LOG(WARNING) << "Can't parse received session description message. "
+				<< "SdpParseError was: " << error.description;
+			return;
+		}
+		LOG(INFO) << " Received session description :" << message;
+		pulsar_webrtc_connection->peer_connection_->SetRemoteDescription(
+			DummySetSessionDescriptionObserver::Create(), session_description);
+		pulsar_webrtc_connection->CreateAnswer();
+	}
+	else
+	{
+		std::string sdp_mid;
+		int sdp_mlineindex = 0;
+		std::string sdp;
+		if (!rtc::GetStringFromJsonObject(jmessage, "sdpMid",
+			&sdp_mid) ||
+			!rtc::GetIntFromJsonObject(jmessage, "sdpMLineIndex",
+				&sdp_mlineindex) ||
+			!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp)) {
+			LOG(WARNING) << "Can't parse received message.";
+			return;
+		}
+		webrtc::SdpParseError error;
+		std::unique_ptr<webrtc::IceCandidateInterface> candidate(
+			webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, &error));
+		if (!candidate.get()) {
+			LOG(WARNING) << "Can't parse received candidate message. "
+				<< "SdpParseError was: " << error.description;
+			return;
+		}
+		if (!pulsar_webrtc_connection->peer_connection_->AddIceCandidate(candidate.get())) {
+			LOG(WARNING) << "Failed to apply the received candidate";
+			return;
+		}
+		LOG(INFO) << " Received candidate :" << message;
+	}
+}
 
 void *sock_thread(void *data)
 {
 
     struct sockaddr_un addr;
-	char buf[100];
-	int fd, cl, rc;
+	char buf[2000];
+	int rc;
 	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
         perror("socket err");
         exit(-1);
@@ -48,13 +113,16 @@ void *sock_thread(void *data)
 	}
 
 	while (1) {
+        memset(buf, 0, sizeof(buf));
         if ((cl = accept(fd, NULL, NULL)) == -1) {
             perror("accept err");
             continue;
         }
+
         while ((rc = read(cl, buf, sizeof(buf))) > 0) {
-            printf("readed\n");
-            write(cl, "hihi", 5);
+            printf("%s\n", buf);
+            std::string msg(buf);
+            HandleWsMessage(msg);
         }
         if (rc == -1) {
             perror("read err");
@@ -81,7 +149,6 @@ int main(int argc, char *argv[])
 	//rtc::Thread* thread = rtc::Thread::Current();
 
 	rtc::ThreadManager::Instance()->SetCurrentThread(&auto_thread);
-	rtc::scoped_refptr<PulsarWebrtcConnection> pulsar_webrtc_connection;
 	pulsar_webrtc_connection = new rtc::RefCountedObject<PulsarWebrtcConnection>();
     pulsar_webrtc_connection->CreatePeerConnection(true);
     rtc::Thread::Current()->Run();
