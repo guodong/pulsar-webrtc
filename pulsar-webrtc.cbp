@@ -33,6 +33,7 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="BUILD.gn" />
+		<Unit filename="Dockerfile" />
 		<Unit filename="easywsclient.cpp" />
 		<Unit filename="easywsclient.hpp" />
 		<Unit filename="interacting_event_manager.cpp" />
@@ -44,6 +45,7 @@
 		<Unit filename="pulsar_desktop_capturer.h" />
 		<Unit filename="pulsar_webrtc_connection.cpp" />
 		<Unit filename="pulsar_webrtc_connection.h" />
+		<Unit filename="start.sh" />
 		<Extensions>
 			<code_completion />
 			<debugger />
