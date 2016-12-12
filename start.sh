@@ -1,4 +1,4 @@
 #!/bin/bash
 nohup /root/pulsar-webrtc &
-sleep 1
+sleep 4
 nodejs /root/conn.js $1
