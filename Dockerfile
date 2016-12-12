@@ -2,6 +2,7 @@ FROM ubuntu:14.04
 MAINTAINER guodong <gd@tongjo.com>
 RUN apt-get update
 RUN apt-get install -y nodejs npm
+RUN apt-get install -y libx11-6 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxtst6 libasound2
 RUN npm install --prefix /root ws
 COPY pulsar-webrtc /root/pulsar-webrtc
 COPY start.sh /root/start.sh
