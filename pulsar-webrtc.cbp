@@ -34,6 +34,7 @@
 		</Compiler>
 		<Unit filename="BUILD.gn" />
 		<Unit filename="Dockerfile" />
+		<Unit filename="conn.js" />
 		<Unit filename="easywsclient.cpp" />
 		<Unit filename="easywsclient.hpp" />
 		<Unit filename="interacting_event_manager.cpp" />
