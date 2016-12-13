@@ -11,7 +11,7 @@ wsc.on('open', function(){
 wsc.on('message', function(data, flags){
   console.log(data);
   var d = new Buffer(data);
-  client.send(d, 0, 0, 8888, 'localhost');
+  client.send(d, 0, d.length, 8888, 'localhost');
 });
 
 client.on("message", function(data) {
