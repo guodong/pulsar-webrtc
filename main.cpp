@@ -2,7 +2,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <sys/un.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 #include <stdlib.h>
 //#include "easywsclient.hpp"
 //#include "pulsar_peer_connection.h"
@@ -20,6 +21,7 @@ std::string token;
 std::string wsServerAddr;
 const char *socket_path = "/tmp/mysocket";
 int fd, cl;
+struct sockaddr_in clientAddr;
 /* /globals */
 
 void HandleWsMessage(const std::string &message)
@@ -89,36 +91,43 @@ void HandleWsMessage(const std::string &message)
 void *sock_thread(void *data)
 {
 
-    struct sockaddr_un addr;
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(8888);
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	char buf[2000];
-	int rc;
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+	//int rc;
+	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
         perror("socket err");
         exit(-1);
 	}
-
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path) - 1);
-	unlink(socket_path);
 
 	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
         perror("bind err");
         exit(-1);
 	}
 
-	if (listen(fd, 5) == -1) {
+	/*if (listen(fd, 5) == -1) {
         perror("listen err");
         exit(-1);
-	}
-
+	}*/
+    int n = 0;
+    socklen_t len = sizeof(clientAddr);
 	while (1) {
         memset(buf, 0, sizeof(buf));
-        if ((cl = accept(fd, NULL, NULL)) == -1) {
+        /*if ((cl = accept(fd, NULL, NULL)) == -1) {
             perror("accept err");
             continue;
+        }*/
+        n = recvfrom(fd, buf, sizeof(buf), 0, (struct sockaddr*)&clientAddr, &len);
+        if (n > 0) {
+            printf("%s\n", buf);
+            std::string msg(buf);
+            HandleWsMessage(msg);
+        } else {
+            perror("recv err");
         }
-
+        /*
         while ((rc = read(cl, buf, sizeof(buf))) > 0) {
             printf("%s\n", buf);
             std::string msg(buf);
@@ -130,7 +139,7 @@ void *sock_thread(void *data)
         } else if (rc == 0) {
             printf("EOF\n");
             close(cl);
-        }
+        }*/
 	}
 }
 

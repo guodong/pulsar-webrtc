@@ -1,4 +1,5 @@
 #include <iostream>
+#include <netinet/in.h>
 
 #include "pulsar_webrtc_connection.h"
 #include "pulsar_desktop_capturer.h"
@@ -14,7 +15,8 @@
 
 using pulsar::PulsarDesktopCapturer;
 
-extern int cl;
+extern int fd;
+extern struct sockaddr_in clientAddr;
 
 void PulsarWebrtcConnection::OnMessage(const webrtc::DataBuffer &bf)
 {
@@ -272,7 +274,8 @@ void PulsarWebrtcConnection::OnIceCandidate(const webrtc::IceCandidateInterface*
     std::string msg = writer.write(jmessage);
     std::cout << msg;
     //ws->send(msg);
-    write(cl, msg.c_str(), msg.length());
+    //write(cl, msg.c_str(), msg.length());
+    sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
     sleep(1);
 }
 
@@ -296,7 +299,8 @@ void PulsarWebrtcConnection::OnSuccess(webrtc::SessionDescriptionInterface* desc
     std::string msg = writer.write(jmessage);
     std::cout << msg;
     //ws->send(writer.write(jmessage));
-    write(cl, msg.c_str(), msg.length());
+    //write(cl, msg.c_str(), msg.length());
+    sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
     sleep(1);
 }
 
