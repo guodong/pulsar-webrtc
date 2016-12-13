@@ -13,8 +13,6 @@ wsc.on('message', function(data, flags){
   client.send(data, 8888, 'localhost');
 });
 
-client.send()
-
 client.on("message", function(data) {
   console.log(data.toString());
   wsc.send(data.toString());
