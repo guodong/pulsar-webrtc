@@ -10,8 +10,8 @@ wsc.on('open', function(){
 
 wsc.on('message', function(data, flags){
   console.log(data);
-  var d = Buffer.from(data);
-  client.send(d, 8888, 'localhost');
+  var d = new Buffer(data);
+  client.send(d, 0, 0, 8888, 'localhost');
 });
 
 client.on("message", function(data) {
