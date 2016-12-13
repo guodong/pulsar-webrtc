@@ -2,8 +2,8 @@ var net = require('net');
 var ws = require('ws');
 var dgram = require('dgram');
 var client = dgram.createSocket('udp4');
-//var wsc = new ws('ws://switch.cloudwarehub.com/?type=server&token=123_conn');
-var wsc = new ws(process.env.SWITCH);
+var wsc = new ws('ws://switch.cloudwarehub.com/?type=server&token=123_conn');
+//var wsc = new ws(process.env.SWITCH);
 wsc.on('open', function(){
   wsc.send('ready');
 });
