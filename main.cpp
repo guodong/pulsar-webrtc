@@ -22,6 +22,7 @@ std::string wsServerAddr;
 const char *socket_path = "/tmp/mysocket";
 int fd, cl;
 struct sockaddr_in clientAddr;
+std::string g_sdp;
 /* /globals */
 
 void HandleWsMessage(const std::string &message)
@@ -45,6 +46,7 @@ void HandleWsMessage(const std::string &message)
 			LOG(WARNING) << "Can't parse received session description message.";
 			return;
 		}
+		g_sdp = sdp;
 		webrtc::SdpParseError error;
 		webrtc::SessionDescriptionInterface *session_description(
 			webrtc::CreateSessionDescription(type, sdp, &error)
@@ -63,7 +65,7 @@ void HandleWsMessage(const std::string &message)
 	{
 		std::string sdp_mid;
 		int sdp_mlineindex = 0;
-		std::string sdp;
+		//std::string sdp;
 		if (!rtc::GetStringFromJsonObject(jmessage, "sdpMid",
 			&sdp_mid) ||
 			!rtc::GetIntFromJsonObject(jmessage, "sdpMLineIndex",
@@ -74,7 +76,7 @@ void HandleWsMessage(const std::string &message)
 		}
 		webrtc::SdpParseError error;
 		std::unique_ptr<webrtc::IceCandidateInterface> candidate(
-			webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, &error));
+			webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, g_sdp, &error));
 		if (!candidate.get()) {
 			LOG(WARNING) << "Can't parse received candidate message. "
 				<< "SdpParseError was: " << error.description;
