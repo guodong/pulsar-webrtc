@@ -67,8 +67,8 @@ void HandleWsMessage(const std::string &message)
 		if (!rtc::GetStringFromJsonObject(jmessage, "sdpMid",
 			&sdp_mid) ||
 			!rtc::GetIntFromJsonObject(jmessage, "sdpMLineIndex",
-				&sdp_mlineindex) ||
-			!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp)) {
+				&sdp_mlineindex) ) {
+			//!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp)) {
 			LOG(WARNING) << "Can't parse received message.";
 			return;
 		}
