@@ -236,6 +236,7 @@ bool PulsarWebrtcConnection::CreatePeerConnection(bool dtls)
                            config, &constraints, NULL, NULL, this);
     if (peer_connection_.get() == NULL)
     {
+        printf("%s\n\n\n", "peer_connection cannot establish");
         return false;
     }
     AddStreams();
