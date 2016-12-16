@@ -13,5 +13,5 @@ COPY libprotobuf_lite.so /root/libprotobuf_lite.so
 COPY libboringssl.so /root/libboringssl.so
 RUN chmod u+x /root/start.sh
 COPY conn.js /root/conn.js
-ENV DISPLAY :0
+ENV DISPLAY :1
 CMD ["/root/start.sh"]
