@@ -25,8 +25,7 @@ void PulsarWebrtcConnection::OnMessage(const webrtc::DataBuffer &bf)
     std::string json_string(buffer->data.data<char>());
     Json::Reader reader;
     Json::Value jmessage;
-    if (!reader.parse(json_string, jmessage))
-    {
+    if (!reader.parse(json_string, jmessage)) {
         LOG(WARNING) << "json parse error" << buffer->data.data();
         return;
     }
@@ -34,8 +33,7 @@ void PulsarWebrtcConnection::OnMessage(const webrtc::DataBuffer &bf)
     rtc::GetStringFromJsonObject(jmessage, "msg", &msg);
     Json::Value payload;
     rtc::GetValueFromJsonObject(jmessage, "payload", &payload);
-    if (!msg.compare("mousemove"))
-    {
+    if (!msg.compare("mousemove")) {
         printf("move\n");
         unsigned int x, y;
         rtc::GetUIntFromJsonObject(payload, "x", &x);
@@ -43,25 +41,19 @@ void PulsarWebrtcConnection::OnMessage(const webrtc::DataBuffer &bf)
         printf("%d, %d\n", x, y);
         XWarpPointer(display, None, root, 0, 0, 0, 0, x, y);
         XFlush(display);
-    }
-    else if (!msg.compare("mousedown"))
-    {
+    } else if (!msg.compare("mousedown")) {
         printf("mousedown\n");
         unsigned int code;
         rtc::GetUIntFromJsonObject(payload, "code", &code);
         XTestFakeButtonEvent(display, code, True, CurrentTime);
         XFlush(display);
-    }
-    else if (!msg.compare("mouseup"))
-    {
+    } else if (!msg.compare("mouseup")) {
         printf("mouseup\n");
         unsigned int code;
         rtc::GetUIntFromJsonObject(payload, "code", &code);
         XTestFakeButtonEvent(display, code, False, CurrentTime);
         XFlush(display);
-    }
-    else if (!msg.compare("keydown"))
-    {
+    } else if (!msg.compare("keydown")) {
         unsigned int code;
         rtc::GetUIntFromJsonObject(payload, "code", &code);
         char c[2] = {code, 0};
@@ -69,9 +61,7 @@ void PulsarWebrtcConnection::OnMessage(const webrtc::DataBuffer &bf)
         KeyCode kc = XKeysymToKeycode(display, ks);
         XTestFakeKeyEvent(display, kc, True, CurrentTime);
         XFlush(display);
-    }
-    else if (!msg.compare("keyup"))
-    {
+    } else if (!msg.compare("keyup")) {
         unsigned int code;
         rtc::GetUIntFromJsonObject(payload, "code", &code);
         char c[2] = {code, 0};
@@ -96,7 +86,7 @@ PulsarWebrtcConnection::~PulsarWebrtcConnection()
 
 void PulsarWebrtcConnection::OnEvent(const XEvent &event)
 {
-    printf("get event: %d\n", event.type);
+    //printf("get event: %d\n", event.type);
     switch (event.type)
     {
     case CreateNotify: {
@@ -176,10 +166,9 @@ void PulsarWebrtcConnection::OnEvent(const XEvent &event)
         break;
     }
     default:
-        if (event.type == iem->GetDamageEventBase() + XDamageNotify)
-        {
+        if (event.type == iem->GetDamageEventBase() + XDamageNotify) {
 
-            printf("%s\n", "get damage");
+            //printf("%s\n", "get damage");
             XDamageSubtract(iem->GetDisplay(), iem->GetDamageHandle(), None, None);
             desktop_capturer->CaptureFrame();
             desktop_capturer->CaptureFrame();
@@ -205,8 +194,7 @@ void PulsarWebrtcConnection::AddStreams()
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream =
         peer_connection_factory_->CreateLocalMediaStream("stream_label");
     stream->AddTrack(video_track);
-    if (!peer_connection_->AddStream(stream))
-    {
+    if (!peer_connection_->AddStream(stream)) {
         LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
     }
 }
@@ -222,25 +210,18 @@ bool PulsarWebrtcConnection::CreatePeerConnection(bool dtls)
     config.servers.push_back(server);
     config.disable_ipv6 = true;
     webrtc::FakeConstraints constraints;
-    if (dtls)
-    {
-        constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
-                                "true");
-    }
-    else
-    {
-        constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
-                                "false");
+    if (dtls) {
+        constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp, "true");
+    } else {
+        constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp, "false");
     }
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
                            config, &constraints, NULL, NULL, this);
-    if (peer_connection_.get() == NULL)
-    {
+    if (peer_connection_.get() == NULL) {
         printf("%s\n\n\n", "peer_connection cannot establish");
         return false;
     }
     AddStreams();
-
 
     return true;
 }
@@ -274,8 +255,6 @@ void PulsarWebrtcConnection::OnIceCandidate(const webrtc::IceCandidateInterface*
     jmessage["candidate"] = sdp;
     std::string msg = writer.write(jmessage);
     std::cout << msg;
-    //ws->send(msg);
-    //write(cl, msg.c_str(), msg.length());
     sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
     sleep(1);
 }
@@ -299,13 +278,11 @@ void PulsarWebrtcConnection::OnSuccess(webrtc::SessionDescriptionInterface* desc
     jmessage["sdp"] = sdp;
     std::string msg = writer.write(jmessage);
     std::cout << msg;
-    //ws->send(writer.write(jmessage));
-    //write(cl, msg.c_str(), msg.length());
     sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
     sleep(1);
 }
 
 void PulsarWebrtcConnection::OnFailure(const std::string& error)
 {
-
+    // nothing
 }

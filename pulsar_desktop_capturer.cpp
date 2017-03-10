@@ -202,6 +202,7 @@ namespace pulsar
 PulsarDesktopCapturer::PulsarDesktopCapturer()
 {
     cap = this;
+    /*
     std::vector<cricket::VideoFormat> fmt;
     cricket::VideoFormat format;
     format.width = 500;
@@ -209,7 +210,7 @@ PulsarDesktopCapturer::PulsarDesktopCapturer()
     format.fourcc = FOURCC_I420;
     format.interval = 20;
     fmt.push_back(format);
-    SetSupportedFormats(fmt);
+    SetSupportedFormats(fmt);*/
 
     webrtc::DesktopCaptureOptions options =
         webrtc::DesktopCaptureOptions::CreateDefault();
@@ -346,10 +347,11 @@ void PulsarDesktopCapturer::OnIncomingCapturedFrame(
     //RTC_DCHECK(async_invoker_);
 
 
-    OnFrame(webrtc::VideoFrame(
+    /*OnFrame(webrtc::VideoFrame(
                 sample.video_frame_buffer(), sample.rotation(),
                 sample.render_time_ms() * rtc::kNumMicrosecsPerMillisec),
-            sample.width(), sample.height());
+            sample.width(), sample.height());*/
+    OnFrame(sample, sample.width(), sample.height());
 }
 
 void PulsarDesktopCapturer::OnCaptureDelayChanged(const int32_t id,

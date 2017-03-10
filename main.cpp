@@ -5,21 +5,14 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <stdlib.h>
-//#include "easywsclient.hpp"
-//#include "pulsar_peer_connection.h"
-//#include "webrtc/base/win32socketserver.h"
 #include "webrtc/base/json.h"
 #include "webrtc/base/thread.h"
 #include "pulsar_webrtc_connection.h"
 
-//using easywsclient::WebSocket;
-
 /* globals */
-//WebSocket::pointer ws;
 rtc::scoped_refptr<PulsarWebrtcConnection> pulsar_webrtc_connection;
 std::string token;
 std::string wsServerAddr;
-const char *socket_path = "/tmp/mysocket";
 int fd, cl;
 struct sockaddr_in clientAddr;
 std::string g_sdp;
@@ -30,19 +23,16 @@ void HandleWsMessage(const std::string &message)
 	std::cout << message << std::endl;
 	Json::Reader reader;
 	Json::Value jmessage;
-	if (!reader.parse(message, jmessage))
-	{
+	if (!reader.parse(message, jmessage)) {
 		LOG(WARNING) << "json parse error" << message;
 		return;
 	}
 
 	std::string type;
 	rtc::GetStringFromJsonObject(jmessage, "type", &type);
-	if (!type.empty()) // sdp
-	{
+	if (!type.empty()) { // sdp
 		std::string sdp;
-		if (!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp))
-		{
+		if (!rtc::GetStringFromJsonObject(jmessage, "sdp", &sdp)) {
 			LOG(WARNING) << "Can't parse received session description message.";
 			return;
 		}
@@ -60,12 +50,10 @@ void HandleWsMessage(const std::string &message)
 		pulsar_webrtc_connection->peer_connection_->SetRemoteDescription(
 			DummySetSessionDescriptionObserver::Create(), session_description);
 		pulsar_webrtc_connection->CreateAnswer();
-	}
-	else
-	{
+	} else {
 		std::string sdp_mid;
 		int sdp_mlineindex = 0;
-		//std::string sdp;
+
 		if (!rtc::GetStringFromJsonObject(jmessage, "sdpMid",
 			&sdp_mid) ||
 			!rtc::GetIntFromJsonObject(jmessage, "sdpMLineIndex",
@@ -92,7 +80,6 @@ void HandleWsMessage(const std::string &message)
 
 void *sock_thread(void *data)
 {
-
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(8888);
@@ -109,18 +96,10 @@ void *sock_thread(void *data)
         exit(-1);
 	}
 
-	/*if (listen(fd, 5) == -1) {
-        perror("listen err");
-        exit(-1);
-	}*/
     int n = 0;
     socklen_t len = sizeof(clientAddr);
 	while (1) {
         memset(buf, 0, sizeof(buf));
-        /*if ((cl = accept(fd, NULL, NULL)) == -1) {
-            perror("accept err");
-            continue;
-        }*/
         n = recvfrom(fd, buf, sizeof(buf), 0, (struct sockaddr*)&clientAddr, &len);
         if (n > 0) {
             printf("%s\n", buf);
@@ -129,27 +108,13 @@ void *sock_thread(void *data)
         } else {
             perror("recv err");
         }
-        /*
-        while ((rc = read(cl, buf, sizeof(buf))) > 0) {
-            printf("%s\n", buf);
-            std::string msg(buf);
-            HandleWsMessage(msg);
-        }
-        if (rc == -1) {
-            perror("read err");
-            exit(-1);
-        } else if (rc == 0) {
-            printf("EOF\n");
-            close(cl);
-        }*/
 	}
 }
 
 int main(int argc, char *argv[])
 {
     pthread_t tid;
-	if (argc > 1)
-	{
+	if (argc > 1) {
 		wsServerAddr = std::string(argv[1]);
 		std::cout << wsServerAddr << std::endl;
 	}
@@ -157,26 +122,11 @@ int main(int argc, char *argv[])
 	pthread_create(&tid, NULL, sock_thread, NULL);
 
 	rtc::AutoThread auto_thread;
-	//rtc::Thread* thread = rtc::Thread::Current();
 
 	rtc::ThreadManager::Instance()->SetCurrentThread(&auto_thread);
 	pulsar_webrtc_connection = new rtc::RefCountedObject<PulsarWebrtcConnection>();
     pulsar_webrtc_connection->CreatePeerConnection(true);
     rtc::Thread::Current()->Run();
-
-
-
-	//std::thread wsThread(WsThread);
-
-
-//	rtc::Win32Thread w32_thread;
-//	rtc::ThreadManager::Instance()->SetCurrentThread(&w32_thread);
-//
-//	pulsar_peer_connection_ = new rtc::RefCountedObject<PulsarPeerConnection>();
-//	pulsar_peer_connection_->CreatePeerConnection(true);
-//
-//	rtc::Thread::Current()->Run();
-
 
 	return 0;
 }

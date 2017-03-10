@@ -1,21 +1,24 @@
 var net = require('net');
-var ws = require('ws');
+var WebSocket = require('ws');
 var dgram = require('dgram');
 var client = dgram.createSocket('udp4');
-var wsc = new ws('ws://switch.cloudwarehub.com/?type=server&token=123_conn');
-//var wsc = new ws(process.env.SWITCH);
-wsc.on('open', function(){
-  wsc.send('ready');
+
+var wss = new WebSocket.Server({
+  port: 8080
 });
 
-wsc.on('message', function(data, flags){
-  console.log(data);
-  var d = new Buffer(data);
-  client.send(d, 0, d.length, 8888, 'localhost');
-});
+wss.on('connection', function(ws) {
+  ws.on('message', function(msg) {
+    console.log(msg);
+    var data = new Buffer(msg);
+    client.send(data, 0, data.length, 8888, 'localhost');
+  });
 
-client.on("message", function(data) {
-  console.log(data.toString());
-  wsc.send(data.toString());
-});
+  client.on("message", function(data) {
+    console.log(data.toString());
+    ws.send(data.toString());
+  });
+})
+
+
 

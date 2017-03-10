@@ -4,4 +4,4 @@ sleep 2
 xhost +
 nohup /root/pulsar-webrtc &
 sleep 2
-nodejs /root/conn.js $1
+nodejs /root/conn.js
