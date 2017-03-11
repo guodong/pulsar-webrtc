@@ -8,7 +8,7 @@ RUN apt-get install -y libx11-6 libxcomposite1 libxdamage1 libxext6 libxfixes3 l
 RUN wget https://gist.githubusercontent.com/guodong/91b631bdfa42e5e72f21/raw/8c942883b96e2996fa9cf541c6bf6150a1c3afb9/xorg-dummy.conf -O /root/xorg.conf
 EXPOSE 6000
 EXPOSE 8080
-RUN apt-get install -y gedit
+RUN apt-get install -y xfwm4 gedit
 RUN npm install --prefix /root ws
 COPY pulsar-webrtc /root/pulsar-webrtc
 COPY start.sh /root/start.sh

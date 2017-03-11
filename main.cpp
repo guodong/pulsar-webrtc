@@ -16,6 +16,7 @@ std::string wsServerAddr;
 int fd, cl;
 struct sockaddr_in clientAddr;
 std::string g_sdp;
+int dport;
 /* /globals */
 
 void HandleWsMessage(const std::string &message)
@@ -82,7 +83,7 @@ void *sock_thread(void *data)
 {
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(8888);
+    addr.sin_port = htons(dport);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	char buf[2000];
 	//int rc;
@@ -115,8 +116,8 @@ int main(int argc, char *argv[])
 {
     pthread_t tid;
 	if (argc > 1) {
-		wsServerAddr = std::string(argv[1]);
-		std::cout << wsServerAddr << std::endl;
+		dport = atoi(argv[1]);
+		std::cout << dport << std::endl;
 	}
 
 	pthread_create(&tid, NULL, sock_thread, NULL);

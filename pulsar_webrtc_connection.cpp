@@ -56,18 +56,18 @@ void PulsarWebrtcConnection::OnMessage(const webrtc::DataBuffer &bf)
     } else if (!msg.compare("keydown")) {
         unsigned int code;
         rtc::GetUIntFromJsonObject(payload, "code", &code);
-        char c[2] = {code, 0};
+        /*char c[2] = {code, 0};
         KeySym ks = XStringToKeysym(c);
-        KeyCode kc = XKeysymToKeycode(display, ks);
-        XTestFakeKeyEvent(display, kc, True, CurrentTime);
+        KeyCode kc = XKeysymToKeycode(display, ks);*/
+        XTestFakeKeyEvent(display, code, True, CurrentTime);
         XFlush(display);
     } else if (!msg.compare("keyup")) {
         unsigned int code;
         rtc::GetUIntFromJsonObject(payload, "code", &code);
-        char c[2] = {code, 0};
+        /*char c[2] = {code, 0};
         KeySym ks = XStringToKeysym(c);
-        KeyCode kc = XKeysymToKeycode(display, ks);
-        XTestFakeKeyEvent(display, kc, False, CurrentTime);
+        KeyCode kc = XKeysymToKeycode(display, ks);*/
+        XTestFakeKeyEvent(display, code, False, CurrentTime);
         XFlush(display);
     }
 }

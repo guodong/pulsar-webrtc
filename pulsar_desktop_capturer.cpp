@@ -189,6 +189,8 @@ void *CaptureThread(void *data)
                 XDamageSubtract(display, damage_handle_, None, None);
                 screen_capturer->CaptureFrame();
                 screen_capturer->CaptureFrame();
+                screen_capturer->CaptureFrame();
+                screen_capturer->CaptureFrame();
             }
             break;
         }
