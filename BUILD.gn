@@ -28,6 +28,7 @@ import("../build/webrtc.gni")
       # See https://bugs.chromium.org/p/webrtc/issues/detail?id=6306
       cflags += [ "-Wno-inconsistent-missing-override" ]
     }
+
   }
 rtc_executable("pulsar-webrtc") {
   sources = [
@@ -36,13 +37,14 @@ rtc_executable("pulsar-webrtc") {
     "pulsar_webrtc_connection.cpp",
     #"pulsar_peer_connection.cpp",
     #"pulsar_peer_connection.h",
-    #"easywsclient.cpp",
-    #"easywsclient.hpp",
+    "easywsclient.cpp",
+    "easywsclient.hpp",
     "pulsar_desktop_capturer.cpp",
     "pulsar_desktop_capturer.hpp",
     "interacting_event_manager.cpp",
     "interacting_event_manager.h",
   ]
+
   deps = [
     "//webrtc/system_wrappers:field_trial_default",
     "//webrtc/system_wrappers:metrics_default",
@@ -56,4 +58,5 @@ rtc_executable("pulsar-webrtc") {
   suppressed_configs += [ "//build/config/clang:find_bad_constructs" ]
   configs += [ ":peerconnection_client_warnings_config" ]
   configs += [ "//build/config/linux:x11" ]
+
 }

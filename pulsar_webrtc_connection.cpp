@@ -12,11 +12,15 @@
 #include "webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "webrtc/media/base/videocapturer.h"
 #include <X11/extensions/XTest.h>
+#include "easywsclient.hpp"
+
+using easywsclient::WebSocket;
 
 using pulsar::PulsarDesktopCapturer;
 
 extern int fd;
 extern struct sockaddr_in clientAddr;
+extern WebSocket::pointer ws;
 
 void PulsarWebrtcConnection::OnMessage(const webrtc::DataBuffer &bf)
 {
@@ -204,7 +208,7 @@ bool PulsarWebrtcConnection::CreatePeerConnection(bool dtls)
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory();
     webrtc::PeerConnectionInterface::RTCConfiguration config;
     webrtc::PeerConnectionInterface::IceServer server;
-    server.uri = "turn:106.75.71.14:3478?transport=udp";
+    server.uri = "turn:turn.cloudwarehub.com:3478?transport=udp";
     server.username = "gd";
     server.password = "gd";
     config.servers.push_back(server);
@@ -255,7 +259,8 @@ void PulsarWebrtcConnection::OnIceCandidate(const webrtc::IceCandidateInterface*
     jmessage["candidate"] = sdp;
     std::string msg = writer.write(jmessage);
     std::cout << msg;
-    sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
+    //sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
+    ws->send(msg);
     sleep(1);
 }
 
@@ -278,7 +283,8 @@ void PulsarWebrtcConnection::OnSuccess(webrtc::SessionDescriptionInterface* desc
     jmessage["sdp"] = sdp;
     std::string msg = writer.write(jmessage);
     std::cout << msg;
-    sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
+    //sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
+    ws->send(msg);
     sleep(1);
 }
 

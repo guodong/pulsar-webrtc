@@ -8,6 +8,9 @@
 #include "webrtc/base/json.h"
 #include "webrtc/base/thread.h"
 #include "pulsar_webrtc_connection.h"
+#include "easywsclient.hpp"
+
+using easywsclient::WebSocket;
 
 /* globals */
 rtc::scoped_refptr<PulsarWebrtcConnection> pulsar_webrtc_connection;
@@ -17,11 +20,17 @@ int fd, cl;
 struct sockaddr_in clientAddr;
 std::string g_sdp;
 int dport;
+WebSocket::pointer ws = NULL;
 /* /globals */
+
+std::string signal_addr;
 
 void HandleWsMessage(const std::string &message)
 {
 	std::cout << message << std::endl;
+	if (message == "ready") {
+        return;
+    }
 	Json::Reader reader;
 	Json::Value jmessage;
 	if (!reader.parse(message, jmessage)) {
@@ -112,15 +121,27 @@ void *sock_thread(void *data)
 	}
 }
 
+void *ws_thread(void *data)
+{
+    ws = WebSocket::from_url_no_mask(signal_addr);
+
+	while (ws->getReadyState() != WebSocket::CLOSED) {
+        ws->poll(100);
+        ws->dispatch(HandleWsMessage);
+	}
+	delete ws;
+	return (void*)0;
+}
+
 int main(int argc, char *argv[])
 {
     pthread_t tid;
 	if (argc > 1) {
-		dport = atoi(argv[1]);
-		std::cout << dport << std::endl;
+		signal_addr = argv[1];
+		std::cout << signal_addr << std::endl;
 	}
 
-	pthread_create(&tid, NULL, sock_thread, NULL);
+	pthread_create(&tid, NULL, ws_thread, NULL);
 
 	rtc::AutoThread auto_thread;
 
