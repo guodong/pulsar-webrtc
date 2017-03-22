@@ -208,7 +208,7 @@ bool PulsarWebrtcConnection::CreatePeerConnection(bool dtls)
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory();
     webrtc::PeerConnectionInterface::RTCConfiguration config;
     webrtc::PeerConnectionInterface::IceServer server;
-    server.uri = "turn:turn.cloudwarehub.com:3478?transport=udp";
+    server.uri = "turn:stun.stunprotocol.org:3478?transport=udp";
     server.username = "gd";
     server.password = "gd";
     config.servers.push_back(server);
