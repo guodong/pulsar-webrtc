@@ -135,6 +135,11 @@ void *ws_thread(void *data)
 
 int main(int argc, char *argv[])
 {
+    Display *display = XOpenDisplay(NULL);
+    if (!display) {
+        std::cout << "cannot open display" << std::endl;
+        exit(1);
+    }
     pthread_t tid;
 	if (argc > 1) {
 		signal_addr = argv[1];
