@@ -5,7 +5,7 @@ xhost +
 nohup /root/pulsar-webrtc $SIGNAL_ADDR &
 sleep 2
 #nohup nodejs /root/conn.js $PORT &
-sleep 10
+sleep 2
 xfwm4 &
 eval $APP &
 /bin/bash
