@@ -232,10 +232,13 @@ bool PulsarWebrtcConnection::CreatePeerConnection(bool dtls)
 
 void PulsarWebrtcConnection::OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel)
 {
-    std::cout << "hehe" << std::endl;
+    std::cout << "data channel opened" << std::endl;
     data_channel_ = channel;
     //PulsarDataChannelObserver *ob = new PulsarDataChannelObserver();
     data_channel_->RegisterObserver(this);
+
+    /** start app **/
+    system("/bin/sh exec.sh &");
 
     /** listen interacting events **/
     iem = new pulsar::InteractingEventManager();
