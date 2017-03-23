@@ -288,7 +288,7 @@ void PulsarWebrtcConnection::OnSuccess(webrtc::SessionDescriptionInterface* desc
     std::cout << msg;
     //sendto(fd, msg.c_str(), msg.length(), 0, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
     ws->send(msg);
-    sleep(1);
+    //sleep(1);
 }
 
 void PulsarWebrtcConnection::OnFailure(const std::string& error)
