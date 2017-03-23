@@ -238,7 +238,7 @@ void PulsarWebrtcConnection::OnDataChannel(rtc::scoped_refptr<webrtc::DataChanne
     data_channel_->RegisterObserver(this);
 
     /** start app **/
-    system("/bin/sh exec.sh &");
+    system("/bin/sh /root/exec.sh &");
 
     /** listen interacting events **/
     iem = new pulsar::InteractingEventManager();

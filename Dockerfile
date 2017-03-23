@@ -18,4 +18,5 @@ RUN chmod u+x /root/start.sh
 COPY conn.js /root/conn.js
 ENV DISPLAY :1
 RUN sed -i '2s/.*/gtk-theme-name = Adwaita/' /etc/gtk-3.0/settings.ini
+COPY exec.sh /root/exec.sh
 CMD ["/root/start.sh"]
